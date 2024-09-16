@@ -6,11 +6,16 @@ import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Address } from './user/entity/address.entity';
+import { User } from './user/entity/user.entity';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
     ConfigModule,
     PassportModule,
+    UserModule,
     JwtModule.registerAsync({
       imports: [ConfigModule], // Impor ConfigModule untuk akses ke ConfigService
       inject: [ConfigService],
@@ -21,8 +26,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         },
       }),
     }),
+    TypeOrmModule.forFeature([User, Address]),
   ],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, JwtStrategy],
+  exports: [JwtModule, PassportModule],
 })
 export class AuthModule {}
