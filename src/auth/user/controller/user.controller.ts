@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   NotFoundException,
   Param,
   Post,
+  Req,
   UnprocessableEntityException,
   UseGuards,
 } from '@nestjs/common';
@@ -23,8 +25,15 @@ export class UserController {
   }
   @Get('email/:email')
   @UseGuards(JwtAuthGuard) // Mengamankan rute dengan JWT Guard
-  async getUserByEmail(@Param('email') email: string): Promise<User> {
+  async getUserByEmail(
+    @Param('email') email: string,
+    @Req() req: any,
+  ): Promise<User> {
     try {
+      const authenticatedUserEmail = req.user.email;
+      if (authenticatedUserEmail !== email) {
+        throw new ForbiddenException('You are not allowed');
+      }
       return await this.userService.getUserByEmail(email);
     } catch (error) {
       if (error instanceof UnprocessableEntityException) {

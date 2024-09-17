@@ -1,5 +1,12 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Address } from './address.entity';
+import { Otp } from './otp.entity';
 
 @Entity('users')
 export class User {
@@ -12,7 +19,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   password: string;
 
   @Column({ unique: true, nullable: true })
@@ -21,9 +28,15 @@ export class User {
   @Column('int', { default: 0 })
   point: number; // Kolom point tanpa relasi foreign key
 
+  @Column({ default: false })
+  isVerified: boolean;
+
   @ManyToOne(() => Address, (address) => address.users, {
     nullable: true,
     onDelete: 'SET NULL',
   }) // Foreign key address bisa null
   address: Address;
+
+  @OneToMany(() => Otp, (otp) => otp.users, { cascade: true })
+  otps: Otp[];
 }
