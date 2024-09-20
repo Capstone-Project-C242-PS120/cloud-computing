@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Profile, Strategy } from 'passport-google-oauth20';
-import { AuthService } from '../auth.service';
 import { ConfigService } from '@nestjs/config';
+import { AuthService } from '../services/auth.service';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy) {
@@ -19,16 +19,16 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(
-    accessToken: string,
-    refreshToken: string,
-    profile: Profile,
-  ): Promise<any> {
+  async validate(accessToken: string, refreshToken: string, profile: Profile) {
     // Generate JWT token
-    const jwt = await this.authService.validateGoogleUser({
-      email: profile.emails[0].value,
-      name: profile.displayName,
-    });
-    return { jwt };
+    try {
+      const access_token = await this.authService.validateGoogleUser({
+        email: profile.emails[0].value,
+        name: profile.displayName,
+      });
+      return access_token;
+    } catch (error) {
+      throw error;
+    }
   }
 }

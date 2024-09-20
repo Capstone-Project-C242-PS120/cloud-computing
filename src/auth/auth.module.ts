@@ -1,34 +1,28 @@
 import { Module } from '@nestjs/common';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
-import { LocalStrategy } from './strategies/local.strategy';
-import { JwtStrategy } from './strategies/jwt.strategy';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { UserModule } from 'src/user/user.module';
+import { JwtLoginModule } from './jwt/module/jwt.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Address } from './user/entity/address.entity';
-import { User } from './user/entity/user.entity';
-import { UserModule } from './user/user.module';
+import { User } from 'src/user/entity/user.entity';
+import { Address } from 'src/user/entity/address.entity';
+import { AuthController } from './controller/auth.controller';
+import { AuthService } from './services/auth.service';
+import { OtpService } from './services/otp.service';
+import { LocalStrategy } from './jwt/strategies/local.strategy';
+import { JwtLoginStrategy } from './jwt/strategies/jwt.strategy';
 import { GoogleStrategy } from './google/google.strategy';
-import { Otp } from './user/entity/otp.entity';
-import { OtpService } from './user/service/otp.service';
+import { Otp } from './entity/otp.entity';
+import { JwtForgotModule } from './jwt/module/jwt-forgot.module';
+import { JwtForgotStrategy } from './jwt/strategies/jwt-forgot.strategy';
 
 @Module({
   imports: [
     ConfigModule,
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     UserModule,
-    JwtModule.registerAsync({
-      imports: [ConfigModule], // Impor ConfigModule untuk akses ke ConfigService
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
-        signOptions: {
-          expiresIn: configService.get<string>('JWT_EXP'),
-        },
-      }),
-    }),
+    JwtLoginModule,
+    JwtForgotModule,
     TypeOrmModule.forFeature([User, Address, Otp]),
   ],
   controllers: [AuthController],
@@ -39,9 +33,10 @@ import { OtpService } from './user/service/otp.service';
     },
     OtpService,
     LocalStrategy,
-    JwtStrategy,
+    JwtLoginStrategy,
+    JwtForgotStrategy,
     GoogleStrategy,
   ],
-  exports: [JwtModule, PassportModule],
+  exports: [AuthModule],
 })
 export class AuthModule {}

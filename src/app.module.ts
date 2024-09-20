@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ProductModule } from './product/product.module';
-import { PointModule } from './point/point.module';
-import { OrderModule } from './order/order.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './auth/user/entity/user.entity';
-import { Address } from './auth/user/entity/address.entity';
-import { Otp } from './auth/user/entity/otp.entity';
 
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './user/entity/user.entity';
+import { Address } from './user/entity/address.entity';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
+import * as path from 'path';
+import { Otp } from './auth/entity/otp.entity';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -25,13 +25,37 @@ import { Otp } from './auth/user/entity/otp.entity';
       }),
       inject: [ConfigService],
     }),
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        transport: {
+          service: configService.get<string>('SMTP_SERVICE'),
+          host: configService.get<string>('SMTP_HOST'),
+          port: configService.get<number>('SMTP_PORT'),
+          secure: configService.get<boolean>('SMTP_SECURE'),
+          auth: {
+            user: configService.get<string>('SMTP_USER'),
+            pass: configService.get<string>('SMTP_PASS'),
+          },
+          debug: true,
+        },
+        defaults: {
+          from: configService.get<string>('DEFAULT_FROM'),
+        },
+        template: {
+          dir: path.join(__dirname, '../src/auth/templates'), // Sesuaikan dengan lokasi template kamu
+          adapter: new PugAdapter(),
+          options: {
+            strict: true,
+          },
+        },
+      }),
+      inject: [ConfigService],
+    }),
     AuthModule,
     ConfigModule.forRoot({
       isGlobal: true, // Membuat konfigurasi tersedia di seluruh modul
     }),
-    ProductModule,
-    PointModule,
-    OrderModule,
   ],
   controllers: [],
   providers: [],

@@ -1,0 +1,41 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Your OTP Code
+    style.
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        font-size: 24px;
+        color: #333333;
+      }
+      p {
+        font-size: 16px;
+        color: #666666;
+      }
+      .otp {
+        font-size: 24px;
+        font-weight: bold;
+        color: #ff6600;
+      }
+  body
+    .container
+      h1 Your OTP Code
+      p Hello, please use the following OTP code to proceed:
+      p.otp #{otp}
+      p If you did not request this code, please ignore this email.
+      p Thank you for using our service!
