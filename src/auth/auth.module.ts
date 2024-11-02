@@ -5,7 +5,6 @@ import { UserModule } from 'src/user/user.module';
 import { JwtLoginModule } from './jwt/module/jwt.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
-import { Address } from 'src/user/entity/address.entity';
 import { AuthController } from './controller/auth.controller';
 import { AuthService } from './services/auth.service';
 import { OtpService } from './services/otp.service';
@@ -23,7 +22,7 @@ import { JwtForgotStrategy } from './jwt/strategies/jwt-forgot.strategy';
     UserModule,
     JwtLoginModule,
     JwtForgotModule,
-    TypeOrmModule.forFeature([User, Address, Otp]),
+    TypeOrmModule.forFeature([User, Otp]),
   ],
   controllers: [AuthController],
   providers: [
