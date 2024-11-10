@@ -46,6 +46,31 @@ export class UserController {
     }
   }
 
+  @Get('getUser')
+  @UseGuards(JwtLoginAuthGuard)
+  async getUserProfile(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      // Ambil email dari JWT
+      const email = req.user.email;
+
+      // Panggil service untuk mendapatkan user berdasarkan email
+      const user = await this.userService.getUserByEmail(email);
+
+      // Kembalikan response dengan data user
+      return new ResponseWrapper(
+        HttpStatus.OK,
+        'User profile fetched successfully',
+        user,
+      );
+    } catch (error) {
+      // Tangani error jika user tidak ditemukan
+      return new ResponseWrapper(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        error.message,
+      );
+    }
+  }
+
   @Get('jwtLogin')
   @UseGuards(JwtLoginAuthGuard)
   async tes() {

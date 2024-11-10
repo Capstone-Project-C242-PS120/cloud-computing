@@ -69,6 +69,25 @@ export class UserService {
     }
   }
 
+  async getUserByEmail(email: string): Promise<User> {
+    // Cari user berdasarkan email
+    const user = await this.userRepository.findOne({
+      where: { email },
+    });
+
+    // Jika user tidak ditemukan
+    if (!user) {
+      throw new UnprocessableEntityException('User not found.');
+    }
+
+    // Pisahkan password sebelum mengembalikan user
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, isVerified, ...userWithoutPassword } = user;
+
+    // Kembalikan user tanpa password
+    return userWithoutPassword as User;
+  }
+
   async getUser(id: string): Promise<User> {
     // Cari user berdasarkan email
     const user = await this.userRepository.findOne({
