@@ -8,6 +8,8 @@ import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 import * as path from 'path';
 import { Otp } from './auth/entity/otp.entity';
 import { AuthModule } from './auth/auth.module';
+
+import { FoodModule } from './food/food.module';
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -55,8 +57,9 @@ import { AuthModule } from './auth/auth.module';
     ConfigModule.forRoot({
       isGlobal: true, // Membuat konfigurasi tersedia di seluruh modul
     }),
+    FoodModule,
   ],
-  controllers: [],
-  providers: [],
+  // controllers: [FoodController],
+  // providers: [FoodService],
 })
 export class AppModule {}
