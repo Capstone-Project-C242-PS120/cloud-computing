@@ -4,12 +4,14 @@ import {
   UploadedFile,
   UseInterceptors,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 
 import { FoodService } from './food.service';
 import { ResponseWrapper } from 'src/common/wrapper/response.wrapper';
+import { JwtLoginAuthGuard } from 'src/auth/jwt/guards/jwt.guard';
 
 @Controller('food')
 export class FoodController {
@@ -21,6 +23,7 @@ export class FoodController {
       storage: multer.memoryStorage(),
     }),
   )
+  @UseGuards(JwtLoginAuthGuard)
   async parseImage(
     @UploadedFile() file: Express.Multer.File,
   ): Promise<ResponseWrapper<any>> {
