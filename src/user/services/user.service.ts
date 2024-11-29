@@ -82,7 +82,7 @@ export class UserService {
 
     // Pisahkan password sebelum mengembalikan user
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, isVerified, ...userWithoutPassword } = user;
+    const { password, verified_at, ...userWithoutPassword } = user;
 
     // Kembalikan user tanpa password
     return userWithoutPassword as User;

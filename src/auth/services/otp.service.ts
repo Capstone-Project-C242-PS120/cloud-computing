@@ -89,7 +89,10 @@ export class OtpService {
       await this.otpRepository.delete(otp.id);
       throw new BadRequestException('Expired OTP.');
     }
-    await this.userRepository.update({ email: email }, { isVerified: true });
+    await this.userRepository.update(
+      { email: email },
+      { verified_at: new Date() },
+    );
     await this.otpRepository.delete(otp.id);
     console.log('OTP verification successful');
     return true;
@@ -112,7 +115,10 @@ export class OtpService {
       await this.otpRepository.delete(otp.id);
       throw new BadRequestException('Expired OTP.');
     }
-    await this.userRepository.update({ email: email }, { isVerified: true });
+    await this.userRepository.update(
+      { email: email },
+      { verified_at: new Date() },
+    );
     await this.otpRepository.delete(otp.id);
     console.log('OTP verification successful');
 

@@ -10,6 +10,9 @@ import { Otp } from './auth/entity/otp.entity';
 import { AuthModule } from './auth/auth.module';
 
 import { FoodModule } from './food/food.module';
+import { FoodHistory } from './food/entity/food-history.entity';
+import { Food } from './food/entity/food.entity';
+import { FoodGroup } from './food/entity/food-group.entity';
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -21,7 +24,7 @@ import { FoodModule } from './food/food.module';
         username: configService.get<string>('DATABASE_USERNAME'),
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
-        entities: [User, Otp],
+        entities: [User, Otp, FoodHistory, Food, FoodGroup],
         synchronize: true,
       }),
       inject: [ConfigService],

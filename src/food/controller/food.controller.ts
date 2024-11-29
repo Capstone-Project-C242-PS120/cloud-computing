@@ -9,9 +9,9 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
 
-import { FoodService } from './food.service';
 import { ResponseWrapper } from 'src/common/wrapper/response.wrapper';
 import { JwtLoginAuthGuard } from 'src/auth/jwt/guards/jwt.guard';
+import { FoodService } from '../services/food.service';
 
 @Controller('food')
 export class FoodController {
@@ -66,7 +66,7 @@ export class FoodController {
         // }),
         new ResponseWrapper(
           HttpStatus.CREATED,
-          'File Analyze Successfully',
+          'Food Analyze Successfully',
           dummyData,
         ),
       );

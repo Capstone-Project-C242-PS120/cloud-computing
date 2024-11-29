@@ -46,7 +46,7 @@ export class AuthService {
     try {
       let user = await this.userRepository.findOneBy({ email: details.email });
       if (user) {
-        user.isVerified = true;
+        user.verified_at = new Date();
         await this.userRepository.save(user);
         console.log('User found and verified:', user.email);
       } else {
@@ -54,7 +54,7 @@ export class AuthService {
         user = this.userRepository.create({
           email: details.email,
           name: details.name,
-          isVerified: true,
+          verified_at: new Date(),
         });
         user = await this.userRepository.save(user);
         console.log('New user created and verified:', user.email);
