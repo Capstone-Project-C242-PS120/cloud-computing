@@ -1,15 +1,6 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import { FoodGroup } from './food-group.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { FoodHistory } from './food-history.entity';
+import { FoodRate } from './food-rate.entity';
 
 @Entity('food')
 export class Food {
@@ -19,15 +10,14 @@ export class Food {
   @Column()
   name: string;
 
-  @Column({ type: 'float' })
+  @Column('double precision')
   nutriscore: number;
 
   @Column({ type: 'char', length: 1 })
   grade: string;
 
-  @ManyToMany(() => FoodGroup)
-  @JoinTable()
-  tags: FoodGroup[];
+  @Column('jsonb', { nullable: true })
+  tags: string[];
 
   @Column('double precision')
   calories: number;
@@ -59,9 +49,8 @@ export class Food {
   @Column()
   type: string;
 
-  @ManyToOne(() => FoodGroup, (foodGroup) => foodGroup.foods)
-  @JoinColumn({ name: 'tag_id' })
-  foodGroup: FoodGroup;
+  @OneToMany(() => FoodRate, (foodRate) => foodRate.food)
+  foodRates: FoodRate[];
 
   @OneToMany(() => FoodHistory, (foodHistory) => foodHistory.food)
   foodHistory: FoodHistory[]; // This property links to FoodHistory

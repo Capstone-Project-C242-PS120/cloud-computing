@@ -10,11 +10,20 @@ import { User } from 'src/user/entity/user.entity';
 import { FoodHistory } from './entity/food-history.entity';
 import { Food } from './entity/food.entity';
 import { FoodGroup } from './entity/food-group.entity';
+import { FoodRate } from './entity/food-rate.entity';
+import { ScanHistory } from './entity/scan-history.entity';
 
 @Module({
   imports: [
     JwtLoginModule,
-    TypeOrmModule.forFeature([User, FoodHistory, Food, FoodGroup]),
+    TypeOrmModule.forFeature([
+      User,
+      FoodHistory,
+      Food,
+      FoodGroup,
+      FoodRate,
+      ScanHistory,
+    ]),
   ],
   providers: [FoodService, SupabaseService, JwtLoginStrategy],
   controllers: [FoodController],

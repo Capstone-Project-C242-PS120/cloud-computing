@@ -9,6 +9,6 @@ export class FoodGroup {
   @Column()
   name: string;
 
-  @OneToMany(() => Food, (food) => food.foodGroup)
+  @OneToMany(() => Food, (food) => food.tags)
   foods: Food[];
 }

@@ -9,6 +9,8 @@ import {
 // import { Address } from './address.entity';
 import { Otp } from 'src/auth/entity/otp.entity';
 import { FoodHistory } from 'src/food/entity/food-history.entity';
+import { FoodRate } from 'src/food/entity/food-rate.entity';
+import { ScanHistory } from 'src/food/entity/scan-history.entity';
 
 @Entity('users')
 export class User {
@@ -34,9 +36,14 @@ export class User {
   })
   otp: Otp;
 
+  @OneToMany(() => FoodRate, (foodRate) => foodRate.user)
+  foodRates: FoodRate[];
+
   @Column({ type: 'timestamp', nullable: true })
   verified_at: Date;
 
   @OneToMany(() => FoodHistory, (foodHistory) => foodHistory.user)
   foodHistory: FoodHistory[];
+  @OneToMany(() => FoodHistory, (scanHistory) => scanHistory.user)
+  scanHistory: ScanHistory[];
 }

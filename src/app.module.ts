@@ -13,6 +13,8 @@ import { FoodModule } from './food/food.module';
 import { FoodHistory } from './food/entity/food-history.entity';
 import { Food } from './food/entity/food.entity';
 import { FoodGroup } from './food/entity/food-group.entity';
+import { FoodRate } from './food/entity/food-rate.entity';
+import { ScanHistory } from './food/entity/scan-history.entity';
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -24,7 +26,15 @@ import { FoodGroup } from './food/entity/food-group.entity';
         username: configService.get<string>('DATABASE_USERNAME'),
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
-        entities: [User, Otp, FoodHistory, Food, FoodGroup],
+        entities: [
+          User,
+          Otp,
+          FoodHistory,
+          Food,
+          FoodGroup,
+          FoodRate,
+          ScanHistory,
+        ],
         synchronize: true,
       }),
       inject: [ConfigService],
