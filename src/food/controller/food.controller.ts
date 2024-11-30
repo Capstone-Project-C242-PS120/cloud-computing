@@ -8,6 +8,7 @@ import {
   Get,
   Query,
   Body,
+  Req,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
@@ -17,14 +18,19 @@ import { JwtLoginAuthGuard } from 'src/auth/jwt/guards/jwt.guard';
 import { FoodService } from '../services/food.service';
 import { FoodResponseWrapper } from 'src/common/wrapper/food-response.wrapper';
 import { AnalyzeFoodSaveDto } from '../dto/analyze-food-save.dto';
+import { EatFoodDTO } from '../dto/eat-food-save.dto';
 
 @Controller('food')
 export class FoodController {
   constructor(private readonly foodService: FoodService) {}
 
   @Get('detail')
-  async getFoodDetails(@Query('id') id: number): Promise<ResponseWrapper<any>> {
-    const result = await this.foodService.getFoodById(id);
+  @UseGuards(JwtLoginAuthGuard)
+  async getFoodDetails(
+    @Req() req: any,
+    @Query('id') id: number,
+  ): Promise<ResponseWrapper<any>> {
+    const result = await this.foodService.getFoodById(req.user.id, id);
     if (!result) {
       return Promise.reject(
         new ResponseWrapper(
@@ -42,6 +48,7 @@ export class FoodController {
   }
 
   @Get('filter')
+  @UseGuards(JwtLoginAuthGuard)
   async getPaginatedFoods(
     @Query('page') page: number = 1, // Default halaman 1
     @Query('limit') limit: number = 10, // Default limit 10
@@ -80,6 +87,48 @@ export class FoodController {
     // return result;
   }
 
+  @Post('save')
+  @UseGuards(JwtLoginAuthGuard)
+  async saveFood(
+    @Req() req: any,
+    @Body() eatFoodDto: EatFoodDTO,
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      // const savedFood = await this.foodService.saveFood(analyzeFoodSaveDto);
+
+      console.log(eatFoodDto);
+      const foodHistory = await this.foodService.addFoodHistory(
+        req.user.id,
+        eatFoodDto.food_id,
+      );
+
+      console.log(foodHistory);
+
+      if (!foodHistory.id) {
+        return Promise.reject(
+          new ResponseWrapper(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            'Failed to save food',
+          ),
+        );
+      }
+
+      if (eatFoodDto.food_rate) {
+        await this.foodService.setFoodRate(
+          req.user.id,
+          eatFoodDto.food_id,
+          eatFoodDto.food_rate,
+        );
+      }
+
+      return Promise.resolve(
+        new ResponseWrapper(HttpStatus.CREATED, 'Food Saved Successfully'),
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   @Post('analyze/save')
   @UseInterceptors(
     FileInterceptor('image', {
@@ -88,6 +137,7 @@ export class FoodController {
   )
   @UseGuards(JwtLoginAuthGuard)
   async analyzeImageAndSave(
+    @Req() req: any,
     @UploadedFile() file: Express.Multer.File,
     @Body() analyzeFoodSaveDto: AnalyzeFoodSaveDto,
   ): Promise<ResponseWrapper<any>> {
@@ -98,7 +148,7 @@ export class FoodController {
     try {
       const savedFood = await this.foodService.saveFood(analyzeFoodSaveDto);
 
-      console.log(savedFood.id);
+      // console.log(savedFood.id);
       if (!savedFood.id) {
         return Promise.reject(
           new ResponseWrapper(
@@ -117,7 +167,7 @@ export class FoodController {
         file.buffer,
         file.mimetype,
       );
-      console.log(publicUrl);
+      // console.log(publicUrl);
       if (!publicUrl) {
         return Promise.reject(
           new ResponseWrapper(
@@ -141,6 +191,14 @@ export class FoodController {
         );
       }
 
+      if (analyzeFoodSaveDto.food_rate) {
+        await this.foodService.setFoodRate(
+          req.user.id,
+          savedFood.id,
+          analyzeFoodSaveDto.food_rate,
+        );
+      }
+
       return Promise.resolve(
         new ResponseWrapper(HttpStatus.CREATED, 'Food Saved Successfully'),
       );
@@ -157,6 +215,7 @@ export class FoodController {
   )
   @UseGuards(JwtLoginAuthGuard)
   async analyzeImage(
+    @Req() req: any,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<ResponseWrapper<any>> {
     if (!file) {
@@ -172,6 +231,8 @@ export class FoodController {
           ),
         );
       }
+
+      await this.foodService.addScanHistory(req.user.id);
 
       return Promise.resolve(
         new ResponseWrapper(

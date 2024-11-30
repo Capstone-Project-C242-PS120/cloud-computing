@@ -16,6 +16,6 @@ export class ScanHistory {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ type: 'timestamp' })
+  @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 }

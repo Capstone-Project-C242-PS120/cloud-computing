@@ -5,10 +5,20 @@ import { Food } from '../entity/food.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FoodGroup } from '../entity/food-group.entity';
 import { AnalyzeFoodSaveDto } from '../dto/analyze-food-save.dto';
+import { FoodHistory } from '../entity/food-history.entity';
+import { ScanHistory } from '../entity/scan-history.entity';
+import { FoodRate } from '../entity/food-rate.entity';
+import { FoodDetailResponseDto } from '../dto/food-detail.response.dto';
 
 @Injectable()
 export class FoodService {
   constructor(
+    @InjectRepository(FoodHistory)
+    private foodHistoryRepository: Repository<FoodHistory>,
+    @InjectRepository(ScanHistory)
+    private scanHistoryRepository: Repository<ScanHistory>,
+    @InjectRepository(FoodRate)
+    private foodRateRepository: Repository<FoodRate>,
     @InjectRepository(Food)
     private foodRepository: Repository<Food>,
     @InjectRepository(FoodGroup)
@@ -16,8 +26,32 @@ export class FoodService {
     private readonly supabaseService: SupabaseService,
   ) {}
 
-  async getFoodById(id: number): Promise<Food> {
-    const food = await this.foodRepository.findOne({ where: { id: id } });
+  async addFoodHistory(userId: string, foodId: number): Promise<FoodHistory> {
+    const foodHistory = this.foodHistoryRepository.create({
+      user: { id: userId },
+      food: { id: foodId },
+    });
+
+    await this.foodHistoryRepository.save(foodHistory);
+
+    return foodHistory;
+  }
+
+  async addScanHistory(userId: string): Promise<ScanHistory> {
+    const scanHistory = this.scanHistoryRepository.create({
+      user: { id: userId },
+    });
+
+    await this.scanHistoryRepository.save(scanHistory);
+
+    return scanHistory;
+  }
+
+  async getFoodById(
+    userId: string,
+    foodId: number,
+  ): Promise<FoodDetailResponseDto> {
+    const food = await this.foodRepository.findOne({ where: { id: foodId } });
 
     if (!food) {
       throw new Error('Food not found');
@@ -32,7 +66,14 @@ export class FoodService {
     // Map tags IDs ke nama FoodGroup
     food.tags = tagsNames.map((tag) => tag.name); // Ganti tags dengan nama FoodGroup
 
-    return food;
+    const foodRate = await this.getFoodRate(userId, foodId);
+
+    const result = {
+      ...food,
+      food_rate: foodRate,
+    };
+
+    return result;
   }
 
   async getFoods(
@@ -120,6 +161,57 @@ export class FoodService {
       totalPages,
     };
   }
+  async getFoodRate(userId: string, foodId: number): Promise<number> {
+    const foodRate = await this.foodRateRepository.findOne({
+      where: {
+        user: { id: userId }, // Relasi user dengan id
+        food: { id: foodId }, // Relasi food dengan id
+      },
+    });
+
+    if (!foodRate) {
+      return 0;
+    }
+
+    return foodRate.rate;
+  }
+  async setFoodRate(
+    userId: string,
+    foodId: number,
+    rate: number,
+  ): Promise<FoodRate> {
+    // Cari makanan berdasarkan foodId
+    const food = await this.foodRepository.findOne({ where: { id: foodId } });
+
+    if (!food) {
+      throw new Error('Food not found');
+    }
+
+    // Cek apakah sudah ada rating untuk user dan food tertentu
+    let foodRate = await this.foodRateRepository.findOne({
+      where: {
+        user: { id: userId }, // Relasi user dengan id
+        food: { id: foodId }, // Relasi food dengan id
+      },
+    });
+
+    if (foodRate) {
+      // Jika sudah ada, update rating
+      foodRate.rate = rate;
+      await this.foodRateRepository.save(foodRate); // Simpan perubahan
+    } else {
+      // Jika belum ada, buat rating baru
+      foodRate = this.foodRateRepository.create({
+        user: { id: userId }, // Relasi user dengan id
+        food: { id: foodId }, // Relasi food dengan id
+        rate: rate,
+      });
+      await this.foodRateRepository.save(foodRate); // Simpan rating baru
+    }
+
+    // Kembalikan foodRate yang telah disimpan atau diperbarui
+    return foodRate;
+  }
 
   async uploadFile(
     bucketName: string,
@@ -176,7 +268,7 @@ export class FoodService {
       nutriscore: saveFoodDto.nutriscore,
       tags: saveFoodDto.tags.split(',').map(String),
       grade: saveFoodDto.grade,
-      type: saveFoodDto.type,
+      type: 'Kemasan',
       calories: saveFoodDto.calories,
       fat: saveFoodDto.fat,
       sugar: saveFoodDto.sugar,

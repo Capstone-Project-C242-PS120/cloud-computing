@@ -21,6 +21,6 @@ export class FoodHistory {
   @JoinColumn({ name: 'food_id' })
   food: Food;
 
-  @Column({ type: 'timestamp' })
+  @Column('timestamp', { default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
 }
