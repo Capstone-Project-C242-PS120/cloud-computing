@@ -15,6 +15,7 @@ import { Food } from './food/entity/food.entity';
 import { FoodGroup } from './food/entity/food-group.entity';
 import { FoodRate } from './food/entity/food-rate.entity';
 import { ScanHistory } from './food/entity/scan-history.entity';
+import { PointModule } from './point/point.module';
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -71,6 +72,7 @@ import { ScanHistory } from './food/entity/scan-history.entity';
       isGlobal: true, // Membuat konfigurasi tersedia di seluruh modul
     }),
     FoodModule,
+    PointModule,
   ],
   // controllers: [FoodController],
   // providers: [FoodService],

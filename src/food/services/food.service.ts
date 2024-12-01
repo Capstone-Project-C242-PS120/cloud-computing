@@ -267,7 +267,7 @@ export class FoodService {
       name: saveFoodDto.name,
       nutriscore: saveFoodDto.nutriscore,
       tags: saveFoodDto.tags.split(',').map(String),
-      grade: saveFoodDto.grade,
+      grade: saveFoodDto.grade.charAt(0),
       type: 'Kemasan',
       calories: saveFoodDto.calories,
       fat: saveFoodDto.fat,

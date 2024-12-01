@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-
 import { JwtLoginStrategy } from 'src/auth/jwt/strategies/jwt.strategy';
 import { JwtLoginModule } from 'src/auth/jwt/module/jwt.module';
 import { FoodService } from './services/food.service';
@@ -12,6 +11,7 @@ import { Food } from './entity/food.entity';
 import { FoodGroup } from './entity/food-group.entity';
 import { FoodRate } from './entity/food-rate.entity';
 import { ScanHistory } from './entity/scan-history.entity';
+import { RecommendationService } from './services/recommendation.service';
 
 @Module({
   imports: [
@@ -25,7 +25,12 @@ import { ScanHistory } from './entity/scan-history.entity';
       ScanHistory,
     ]),
   ],
-  providers: [FoodService, SupabaseService, JwtLoginStrategy],
+  providers: [
+    FoodService,
+    SupabaseService,
+    JwtLoginStrategy,
+    RecommendationService,
+  ],
   controllers: [FoodController],
 })
 export class FoodModule {}

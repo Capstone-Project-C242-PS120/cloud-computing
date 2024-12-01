@@ -7,12 +7,13 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entity/user.entity';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { RegisterUserDto } from '../dto/register-user.dto';
 import { OtpService } from 'src/auth/services/otp.service';
 import { JwtService } from '@nestjs/jwt';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { ScanHistory } from 'src/food/entity/scan-history.entity';
 
 @Injectable()
 export class UserService {
@@ -20,6 +21,8 @@ export class UserService {
     private otpService: OtpService,
     @Inject('JwtLoginService') private jwtLoginService: JwtService,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(ScanHistory)
+    private scanHistoryRepository: Repository<ScanHistory>,
   ) {}
 
   async createUser(request: RegisterUserDto): Promise<User> {
@@ -138,5 +141,25 @@ export class UserService {
     }
 
     return user.email;
+  }
+  async getTodayScanCount(userId: string): Promise<any> {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0); // Atur waktu ke awal hari
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999); // Atur waktu ke akhir hari
+
+    let scan_quota = await this.scanHistoryRepository.count({
+      where: {
+        user: { id: userId },
+        created_at: Between(startOfDay, endOfDay), // Gunakan FindOperator 'LessThanOrEqual'
+      },
+    });
+
+    scan_quota = 5 - scan_quota;
+
+    return {
+      scan_quota,
+    };
   }
 }

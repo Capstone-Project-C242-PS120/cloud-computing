@@ -20,6 +20,24 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 export class UserController {
   constructor(private userService: UserService) {}
 
+  @Get('scan')
+  @UseGuards(JwtLoginAuthGuard)
+  async getUserScanToday(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      const scan = await this.userService.getTodayScanCount(req.user.id);
+      return new ResponseWrapper(
+        HttpStatus.OK,
+        'User scan history fetched successfully',
+        scan,
+      );
+    } catch (error) {
+      return new ResponseWrapper(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        error.message,
+      );
+    }
+  }
+
   @Post('register')
   async registerUser(
     @Body() request: RegisterUserDto,

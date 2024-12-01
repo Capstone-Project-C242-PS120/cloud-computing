@@ -19,10 +19,14 @@ import { FoodService } from '../services/food.service';
 import { FoodResponseWrapper } from 'src/common/wrapper/food-response.wrapper';
 import { AnalyzeFoodSaveDto } from '../dto/analyze-food-save.dto';
 import { EatFoodDTO } from '../dto/eat-food-save.dto';
+import { RecommendationService } from '../services/recommendation.service';
 
 @Controller('food')
 export class FoodController {
-  constructor(private readonly foodService: FoodService) {}
+  constructor(
+    private readonly foodService: FoodService,
+    private readonly recommendationService: RecommendationService,
+  ) {}
 
   @Get('detail')
   @UseGuards(JwtLoginAuthGuard)
@@ -250,6 +254,25 @@ export class FoodController {
         ),
       );
     }
+  }
+
+  @Get('recommendation')
+  async getRecommendation(): Promise<ResponseWrapper<any>> {
+    const recommendation = await this.recommendationService.testModel();
+    if (!recommendation) {
+      return Promise.reject(
+        new ResponseWrapper(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          'Failed to retrieve recommendation',
+        ),
+      );
+    }
+
+    return new ResponseWrapper(
+      HttpStatus.OK,
+      'Recommendation retrieved successfully',
+      recommendation,
+    );
   }
 
   // async parseImage(
