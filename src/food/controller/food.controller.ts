@@ -100,13 +100,10 @@ export class FoodController {
     try {
       // const savedFood = await this.foodService.saveFood(analyzeFoodSaveDto);
 
-      console.log(eatFoodDto);
       const foodHistory = await this.foodService.addFoodHistory(
         req.user.id,
         eatFoodDto.food_id,
       );
-
-      console.log(foodHistory);
 
       if (!foodHistory.id) {
         return Promise.reject(
@@ -129,7 +126,7 @@ export class FoodController {
         new ResponseWrapper(HttpStatus.CREATED, 'Food Saved Successfully'),
       );
     } catch (error) {
-      console.log(error);
+      throw new Error(error);
     }
   }
 

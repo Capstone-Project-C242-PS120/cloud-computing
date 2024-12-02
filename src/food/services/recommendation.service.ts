@@ -29,6 +29,7 @@ export class RecommendationService implements OnModuleInit {
 
     try {
       this.model = await tf.loadLayersModel(modelPath);
+      //   this.model = await tf.node.loadSavedModel(modelPath);
       console.log('Model loaded');
     } catch (error) {
       console.error('Error loading model:', error);

@@ -20,6 +20,7 @@ import { SubscriptionController } from './subscription/subscription.controller';
 import { SubscriptionService } from './subscription/subscription.service';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { PointHistory } from './point/entity/point-history.entity';
+import { Gift } from './point/entity/gift.entity';
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -40,6 +41,7 @@ import { PointHistory } from './point/entity/point-history.entity';
           FoodRate,
           ScanHistory,
           PointHistory,
+          Gift,
         ],
         synchronize: true,
       }),

@@ -32,6 +32,24 @@ export class UserService {
     private foodRepository: Repository<Food>,
   ) {}
 
+  async getUserFoodDataFromFoodHistorys(userId: string): Promise<any> {
+    const foodHistorys = await this.foodHistoryRepository.find({
+      where: { user: { id: userId } },
+      relations: ['food'],
+    });
+
+    const foods = foodHistorys.map((foodHistory) => ({
+      id: foodHistory.food.id,
+      name: foodHistory.food.name,
+      grade: foodHistory.food.grade,
+      tags: foodHistory.food.tags,
+      image_url: foodHistory.food.image_url,
+      type: foodHistory.food.type,
+    }));
+
+    return foods;
+  }
+
   async getUserSummary(userId: string): Promise<UserSummaryResponseDto> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -49,11 +67,12 @@ export class UserService {
       .andWhere('foodHistory.created_at >= :today', { today })
       .andWhere('foodHistory.created_at < :tomorrow', { tomorrow })
       .getRawOne();
-
+    const roundToTwoDecimals = (value: number | null) =>
+      value ? Math.round(value * 100) / 100 : 0;
     return {
-      calories: result.totalCalories || 0,
-      sugar: result.totalSugar || 0,
-      protein: result.totalProtein || 0,
+      calories: roundToTwoDecimals(result.totalCalories),
+      protein: roundToTwoDecimals(result.totalProtein),
+      sugar: roundToTwoDecimals(result.totalSugar),
     };
   }
 

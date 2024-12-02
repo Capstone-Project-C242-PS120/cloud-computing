@@ -38,6 +38,26 @@ export class UserController {
     }
   }
 
+  @Get('history')
+  @UseGuards(JwtLoginAuthGuard)
+  async getUserHistory(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      const history = await this.userService.getUserFoodDataFromFoodHistorys(
+        req.user.id,
+      );
+      return new ResponseWrapper(
+        HttpStatus.OK,
+        'User history fetched successfully',
+        history,
+      );
+    } catch (error) {
+      return new ResponseWrapper(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        error.message,
+      );
+    }
+  }
+
   @Get('scan')
   @UseGuards(JwtLoginAuthGuard)
   async getUserScanToday(@Req() req: any): Promise<ResponseWrapper<any>> {
