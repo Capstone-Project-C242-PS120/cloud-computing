@@ -42,9 +42,7 @@ export class UserController {
   @UseGuards(JwtLoginAuthGuard)
   async getUserHistory(@Req() req: any): Promise<ResponseWrapper<any>> {
     try {
-      const history = await this.userService.getUserFoodDataFromFoodHistorys(
-        req.user.id,
-      );
+      const history = await this.userService.getUserFoodHistory(req.user.id);
       return new ResponseWrapper(
         HttpStatus.OK,
         'User history fetched successfully',

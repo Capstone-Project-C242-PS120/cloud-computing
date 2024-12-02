@@ -15,6 +15,7 @@ import { FoodRate } from 'src/food/entity/food-rate.entity';
 import { FoodHistory } from 'src/food/entity/food-history.entity';
 import { ScanHistory } from 'src/food/entity/scan-history.entity';
 import { Food } from 'src/food/entity/food.entity';
+import { FoodGroup } from 'src/food/entity/food-group.entity';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { Food } from 'src/food/entity/food.entity';
       FoodHistory,
       ScanHistory,
       Food,
+      FoodGroup,
     ]),
     MailerModule,
     JwtLoginModule,

@@ -17,6 +17,7 @@ import { ScanHistory } from 'src/food/entity/scan-history.entity';
 import { UserSummaryResponseDto } from '../dto/summary-response.dto';
 import { FoodHistory } from 'src/food/entity/food-history.entity';
 import { Food } from 'src/food/entity/food.entity';
+import { FoodGroup } from 'src/food/entity/food-group.entity';
 
 @Injectable()
 export class UserService {
@@ -30,24 +31,43 @@ export class UserService {
     private foodHistoryRepository: Repository<FoodHistory>,
     @InjectRepository(Food)
     private foodRepository: Repository<Food>,
+    @InjectRepository(FoodGroup)
+    private foodGroupRepository: Repository<FoodGroup>,
   ) {}
 
-  async getUserFoodDataFromFoodHistorys(userId: string): Promise<any> {
-    const foodHistorys = await this.foodHistoryRepository.find({
-      where: { user: { id: userId } },
-      relations: ['food'],
+  async getUserFoodHistory(userId: string): Promise<any> {
+    // Ambil riwayat makanan user berdasarkan user_id
+    const foodHistories = await this.foodHistoryRepository
+      .createQueryBuilder('foodHistory')
+      .leftJoinAndSelect('foodHistory.food', 'food') // Gabungkan dengan tabel food
+      .where('foodHistory.user_id = :userId', { userId })
+      .getMany();
+
+    // Ambil semua data FoodGroup untuk memetakan ID ke nama
+    const foodGroups = await this.foodGroupRepository.find();
+    const foodGroupMap = foodGroups.reduce((map, group) => {
+      map[group.id] = group.name;
+      return map;
+    }, {});
+
+    // Proses data untuk mengganti ID tags dengan nama
+    const foodHistoryWithTags = foodHistories.map((foodHistory) => {
+      const food = foodHistory.food;
+      const tagNames = food.tags
+        .map((tagId) => foodGroupMap[tagId] || null)
+        .filter(Boolean);
+
+      return {
+        id: food.id,
+        name: food.name,
+        grade: food.grade,
+        tags: tagNames, // Ubah ID tags menjadi nama
+        image_url: food.image_url,
+        type: food.type,
+      };
     });
 
-    const foods = foodHistorys.map((foodHistory) => ({
-      id: foodHistory.food.id,
-      name: foodHistory.food.name,
-      grade: foodHistory.food.grade,
-      tags: foodHistory.food.tags,
-      image_url: foodHistory.food.image_url,
-      type: foodHistory.food.type,
-    }));
-
-    return foods;
+    return foodHistoryWithTags;
   }
 
   async getUserSummary(userId: string): Promise<UserSummaryResponseDto> {
