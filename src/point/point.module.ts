@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { PointService } from './point.service';
-import { PointController } from './point.controller';
+import { PointService } from './services/point.service';
+import { PointController } from './controller/point.controller';
 import { JwtLoginModule } from 'src/auth/jwt/module/jwt.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
