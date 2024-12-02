@@ -9,6 +9,8 @@ import { FoodHistory } from '../entity/food-history.entity';
 import { ScanHistory } from '../entity/scan-history.entity';
 import { FoodRate } from '../entity/food-rate.entity';
 import { FoodDetailResponseDto } from '../dto/food-detail.response.dto';
+import { User } from 'src/user/entity/user.entity';
+import { PointHistory } from 'src/point/entity/point-history.entity';
 
 @Injectable()
 export class FoodService {
@@ -23,6 +25,9 @@ export class FoodService {
     private foodRepository: Repository<Food>,
     @InjectRepository(FoodGroup)
     private foodGroupRepository: Repository<FoodGroup>,
+    @InjectRepository(PointHistory)
+    private pointHistoryRepository: Repository<PointHistory>,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly supabaseService: SupabaseService,
   ) {}
 
@@ -99,13 +104,10 @@ export class FoodService {
         tags: JSON.stringify(tags),
       });
     }
-
-    // Menambahkan kondisi pencarian berdasarkan nama
     if (name) {
       queryBuilder.andWhere('food.name ILIKE :name', { name: `%${name}%` });
     }
 
-    // Menambahkan pagination
     queryBuilder.skip(skip).take(limit);
 
     queryBuilder.select([
@@ -230,12 +232,22 @@ export class FoodService {
     return data;
   }
 
-  async analyzeFoodNutrition(): Promise<Food> {
+  async analyzeFoodNutrition(userId: string): Promise<Food> {
+    // update user point
+
+    try {
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      user.point += 10;
+      await this.userRepository.save(user);
+      await this.createPointHistory(userId, 10);
+    } catch (error) {
+      throw new Error(error);
+    }
+
     const FoodExample = {
       nutriscore: -2.1,
-
       grade: 'A',
-      type: 'kemasan',
+      type: 'Kemasan',
       calories: 50.5,
       fat: 0.5,
       sugar: 0.5,
@@ -246,6 +258,14 @@ export class FoodService {
     } as Food;
 
     return FoodExample;
+  }
+
+  async createPointHistory(userId: string, point: number): Promise<void> {
+    await this.pointHistoryRepository.save({
+      user: { id: userId },
+      point,
+      description: 'Analyze food',
+    });
   }
 
   async updateFoodImage(foodId: number, imageUrl: string): Promise<Food> {
@@ -282,18 +302,6 @@ export class FoodService {
 
     const savedFood = await this.foodRepository.save(food);
 
-    // console.log(savedFood);
-
     return savedFood;
   }
-
-  //   async getPublicUrl(bucketName: string, filePath: string): Promise<string> {
-  //     const supabase = this.supabaseService.getSupabaseClient();
-
-  //     const { publicUrl } = supabase.storage
-  //       .from(bucketName)
-  //       .getPublicUrl(filePath);
-
-  //     return publicUrl;
-  //   }
 }

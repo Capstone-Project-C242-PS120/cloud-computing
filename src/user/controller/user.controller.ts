@@ -20,6 +20,24 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 export class UserController {
   constructor(private userService: UserService) {}
 
+  @Get('summary')
+  @UseGuards(JwtLoginAuthGuard)
+  async getUserSummary(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      const summary = await this.userService.getUserSummary(req.user.id);
+      return new ResponseWrapper(
+        HttpStatus.OK,
+        'User summary fetched successfully',
+        summary,
+      );
+    } catch (error) {
+      return new ResponseWrapper(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        error.message,
+      );
+    }
+  }
+
   @Get('scan')
   @UseGuards(JwtLoginAuthGuard)
   async getUserScanToday(@Req() req: any): Promise<ResponseWrapper<any>> {
@@ -27,7 +45,7 @@ export class UserController {
       const scan = await this.userService.getTodayScanCount(req.user.id);
       return new ResponseWrapper(
         HttpStatus.OK,
-        'User scan history fetched successfully',
+        'User scan quota fetched successfully',
         scan,
       );
     } catch (error) {
@@ -69,10 +87,10 @@ export class UserController {
   async getUserProfile(@Req() req: any): Promise<ResponseWrapper<any>> {
     try {
       // Ambil email dari JWT
-      const email = req.user.email;
+      const userId = req.user.id;
 
       // Panggil service untuk mendapatkan user berdasarkan email
-      const user = await this.userService.getUserByEmail(email);
+      const user = await this.userService.getUser(userId);
 
       // Kembalikan response dengan data user
       return new ResponseWrapper(

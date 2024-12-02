@@ -14,6 +14,9 @@ import { OtpService } from 'src/auth/services/otp.service';
 import { JwtService } from '@nestjs/jwt';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { ScanHistory } from 'src/food/entity/scan-history.entity';
+import { UserSummaryResponseDto } from '../dto/summary-response.dto';
+import { FoodHistory } from 'src/food/entity/food-history.entity';
+import { Food } from 'src/food/entity/food.entity';
 
 @Injectable()
 export class UserService {
@@ -23,7 +26,36 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(ScanHistory)
     private scanHistoryRepository: Repository<ScanHistory>,
+    @InjectRepository(FoodHistory)
+    private foodHistoryRepository: Repository<FoodHistory>,
+    @InjectRepository(Food)
+    private foodRepository: Repository<Food>,
   ) {}
+
+  async getUserSummary(userId: string): Promise<UserSummaryResponseDto> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    const result = await this.foodHistoryRepository
+      .createQueryBuilder('foodHistory')
+      .innerJoinAndSelect('foodHistory.food', 'food')
+      .select('SUM(food.calories)', 'totalCalories')
+      .addSelect('SUM(food.sugar)', 'totalSugar')
+      .addSelect('SUM(food.protein)', 'totalProtein')
+      .where('foodHistory.user_id = :userId', { userId })
+      .andWhere('foodHistory.created_at >= :today', { today })
+      .andWhere('foodHistory.created_at < :tomorrow', { tomorrow })
+      .getRawOne();
+
+    return {
+      calories: result.totalCalories || 0,
+      sugar: result.totalSugar || 0,
+      protein: result.totalProtein || 0,
+    };
+  }
 
   async createUser(request: RegisterUserDto): Promise<User> {
     try {
@@ -104,7 +136,7 @@ export class UserService {
 
     // Pisahkan password sebelum mengembalikan user
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...userWithoutPassword } = user;
+    const { password, verified_at, ...userWithoutPassword } = user;
 
     // Kembalikan user tanpa password
     return userWithoutPassword as User;

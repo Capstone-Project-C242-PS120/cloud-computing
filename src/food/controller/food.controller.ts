@@ -226,7 +226,9 @@ export class FoodController {
       return Promise.reject(new ResponseWrapper(400, 'No file uploaded'));
     }
     try {
-      const analyzeResult = await this.foodService.analyzeFoodNutrition();
+      const analyzeResult = await this.foodService.analyzeFoodNutrition(
+        req.user.id,
+      );
       if (!analyzeResult) {
         return Promise.reject(
           new ResponseWrapper(
@@ -246,6 +248,7 @@ export class FoodController {
         ),
       );
     } catch (error) {
+      console.log(error);
       return Promise.reject(
         new ResponseWrapper(
           HttpStatus.INTERNAL_SERVER_ERROR,

@@ -14,11 +14,19 @@ import { JwtForgotModule } from 'src/auth/jwt/module/jwt-forgot.module';
 import { FoodRate } from 'src/food/entity/food-rate.entity';
 import { FoodHistory } from 'src/food/entity/food-history.entity';
 import { ScanHistory } from 'src/food/entity/scan-history.entity';
+import { Food } from 'src/food/entity/food.entity';
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([User, Otp, FoodRate, FoodHistory, ScanHistory]),
+    TypeOrmModule.forFeature([
+      User,
+      Otp,
+      FoodRate,
+      FoodHistory,
+      ScanHistory,
+      Food,
+    ]),
     MailerModule,
     JwtLoginModule,
     JwtForgotModule,

@@ -16,6 +16,10 @@ import { FoodGroup } from './food/entity/food-group.entity';
 import { FoodRate } from './food/entity/food-rate.entity';
 import { ScanHistory } from './food/entity/scan-history.entity';
 import { PointModule } from './point/point.module';
+import { SubscriptionController } from './subscription/subscription.controller';
+import { SubscriptionService } from './subscription/subscription.service';
+import { SubscriptionModule } from './subscription/subscription.module';
+import { PointHistory } from './point/entity/point-history.entity';
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -35,6 +39,7 @@ import { PointModule } from './point/point.module';
           FoodGroup,
           FoodRate,
           ScanHistory,
+          PointHistory,
         ],
         synchronize: true,
       }),
@@ -73,7 +78,10 @@ import { PointModule } from './point/point.module';
     }),
     FoodModule,
     PointModule,
+    SubscriptionModule,
   ],
+  controllers: [SubscriptionController],
+  providers: [SubscriptionService],
   // controllers: [FoodController],
   // providers: [FoodService],
 })

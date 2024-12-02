@@ -12,6 +12,7 @@ import { FoodGroup } from './entity/food-group.entity';
 import { FoodRate } from './entity/food-rate.entity';
 import { ScanHistory } from './entity/scan-history.entity';
 import { RecommendationService } from './services/recommendation.service';
+import { PointHistory } from 'src/point/entity/point-history.entity';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { RecommendationService } from './services/recommendation.service';
       FoodGroup,
       FoodRate,
       ScanHistory,
+      PointHistory,
     ]),
   ],
   providers: [
