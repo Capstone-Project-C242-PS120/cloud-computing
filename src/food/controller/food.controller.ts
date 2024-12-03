@@ -257,8 +257,11 @@ export class FoodController {
   }
 
   @Get('recommendation')
-  async getRecommendation(): Promise<ResponseWrapper<any>> {
-    const recommendation = await this.recommendationService.testModel();
+  @UseGuards(JwtLoginAuthGuard)
+  async getRecommendation(@Req() req: any): Promise<ResponseWrapper<any>> {
+    const recommendation = await this.recommendationService.getUserFoodHistory(
+      req.user.id,
+    );
     if (!recommendation) {
       return Promise.reject(
         new ResponseWrapper(

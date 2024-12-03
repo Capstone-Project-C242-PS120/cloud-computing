@@ -41,6 +41,7 @@ export class UserService {
       .createQueryBuilder('foodHistory')
       .leftJoinAndSelect('foodHistory.food', 'food') // Gabungkan dengan tabel food
       .where('foodHistory.user_id = :userId', { userId })
+      .orderBy('foodHistory.created_at', 'DESC')
       .getMany();
 
     // Ambil semua data FoodGroup untuk memetakan ID ke nama
