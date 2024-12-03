@@ -3,7 +3,8 @@
 /node_modules
 /build
 /model
-
+/model/dataset
+/model/model.json
 # Logs
 logs
 *.log
