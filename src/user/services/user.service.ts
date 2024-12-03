@@ -71,6 +71,10 @@ export class UserService {
   }
 
   async getUserSummary(userId: string): Promise<UserSummaryResponseDto> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -90,6 +94,7 @@ export class UserService {
     const roundToTwoDecimals = (value: number | null) =>
       value ? Math.round(value * 100) / 100 : 0;
     return {
+      name: user.name,
       calories: roundToTwoDecimals(result.totalCalories),
       protein: roundToTwoDecimals(result.totalProtein),
       sugar: roundToTwoDecimals(result.totalSugar),

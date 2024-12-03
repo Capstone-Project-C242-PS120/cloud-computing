@@ -21,14 +21,14 @@ export class RecommendationService implements OnModuleInit {
     private foodGroupRepository: Repository<FoodGroup>,
     private readonly foodService: FoodService,
   ) {}
-  private model: tf.LayersModel;
+  private model: tf.GraphModel;
 
   async loadModel(modelPath: string): Promise<void> {
     // console.log(modelPath);
     // this.model = await tf.loadLayersModel(modelPath);
 
     try {
-      this.model = await tf.loadLayersModel(modelPath);
+      this.model = await tf.loadGraphModel(modelPath);
       //   this.model = await tf.node.loadSavedModel(modelPath);
       console.log('Model loaded');
     } catch (error) {
