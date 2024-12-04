@@ -363,6 +363,11 @@ export class RecommendationService implements OnModuleInit {
       }
     }
 
+    // Jika tidak ditemukan data sama sekali, kembalikan array kosong
+    if (topFoods.length === 0) {
+      return []; // Tidak ada data makanan ditemukan
+    }
+
     // Jika kurang dari 10 data, ambil data tambahan dari database
     if (topFoods.length < maxFoods) {
       const excludedIds = topFoods.map((food) => food.id); // ID yang sudah ada
