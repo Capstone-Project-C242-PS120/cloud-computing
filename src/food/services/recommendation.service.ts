@@ -1,7 +1,7 @@
-import { HttpException, HttpStatus, Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FoodHistory } from '../entity/food-history.entity';
-import { In, Not, Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { FoodService } from './food.service';
 import { FoodGroup } from '../entity/food-group.entity';
 import { Food } from '../entity/food.entity';
@@ -35,15 +35,14 @@ export class RecommendationService implements OnModuleInit {
       if (!modelPath) throw new Error('Model path is not defined');
       this.model = await tf.loadLayersModel(modelPath);
 
+
       // Load product data from CSV
       if (!process.env.ITEM_URL) throw new Error('Item URL is not defined');
       this.product = await this.loadnormalcsvData(process.env.ITEM_URL);
-
       // Load dataset from CSV
       if (!process.env.DATASET_URL)
         throw new Error('Dataset URL is not defined');
       this.dataset = await this.loadCsvData(process.env.DATASET_URL);
-
       // Load feature list from JSON file
       if (!process.env.FEATURE_URL)
         throw new Error('Feature URL is not defined');
