@@ -317,9 +317,8 @@ export class RecommendationService implements OnModuleInit {
   }
 
   async getTop10Foods(sortedIndices: number[]): Promise<any[]> {
-    const topFoods = [];
     const maxFoods = 10;
-
+    const topFoods = [];
     // Ambil daftar food group untuk mapping ID ke nama
     const foodGroups = await this.foodGroupRepository.find();
     const foodGroupMap = foodGroups.reduce((map, group) => {
@@ -327,7 +326,10 @@ export class RecommendationService implements OnModuleInit {
       return map;
     }, {});
 
-    for (const index of sortedIndices) {
+    // Ambil hanya 10 indeks pertama dari sortedIndices
+    const limitedIndices = sortedIndices.slice(0, maxFoods);
+
+    for (const index of limitedIndices) {
       const productId = this.product[index] as unknown as number;
 
       if (!productId) {
@@ -356,51 +358,10 @@ export class RecommendationService implements OnModuleInit {
           type: food.type,
         });
       }
-
-      // Jika sudah mendapatkan 10 data, hentikan loop
-      if (topFoods.length >= maxFoods) {
-        break;
-      }
     }
 
     // Jika tidak ditemukan data sama sekali, kembalikan array kosong
-    if (topFoods.length === 0) {
-      return []; // Tidak ada data makanan ditemukan
-    }
-
-    // Jika kurang dari 10 data, ambil data tambahan dari database
-    if (topFoods.length < maxFoods) {
-      const excludedIds = topFoods.map((food) => food.id); // ID yang sudah ada
-      const additionalFoods = await this.foodRepository.find({
-        where: {
-          id: In(
-            this.product
-              .map((p) => p as unknown as number)
-              .filter((id) => !excludedIds.includes(id)),
-          ),
-        },
-        select: ['id', 'name', 'grade', 'tags', 'image_url', 'type'], // Kolom yang akan diambil
-        take: maxFoods - topFoods.length,
-      });
-
-      // Proses tambahan foods untuk mengganti ID tags dengan nama
-      additionalFoods.forEach((food) => {
-        const tagNames = food.tags
-          .map((tagId) => foodGroupMap[tagId] || null)
-          .filter(Boolean);
-
-        topFoods.push({
-          id: food.id,
-          name: food.name,
-          grade: food.grade,
-          tags: tagNames,
-          image_url: food.image_url,
-          type: food.type,
-        });
-      });
-    }
-
-    return topFoods;
+    return topFoods.length > 0 ? topFoods : [];
   }
 
   // Fungsi untuk melakukan scaling, tiling, dan reshape
