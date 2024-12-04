@@ -35,7 +35,6 @@ export class RecommendationService implements OnModuleInit {
       if (!modelPath) throw new Error('Model path is not defined');
       this.model = await tf.loadLayersModel(modelPath);
 
-
       // Load product data from CSV
       if (!process.env.ITEM_URL) throw new Error('Item URL is not defined');
       this.product = await this.loadnormalcsvData(process.env.ITEM_URL);
@@ -78,6 +77,10 @@ export class RecommendationService implements OnModuleInit {
         'food.tags',
       ])
       .getRawMany();
+
+    if (!history || history.length === 0) {
+      return {};
+    }
     const foodGroups = await this.foodGroupRepository.find();
     const foodGroupMap = foodGroups.reduce((map, group) => {
       map[group.id] = group.name;
@@ -240,6 +243,9 @@ export class RecommendationService implements OnModuleInit {
     userID: string,
   ): Promise<any> {
     const userData = await this.getUserFoodHistory(userID);
+    if (!userData.length) {
+      return [];
+    }
     // console.log('User Data:', userData);
 
     if (!userData || Object.keys(userData).length === 0) {
@@ -300,6 +306,9 @@ export class RecommendationService implements OnModuleInit {
     // console.log('Recommendation Tensor:', recommendationTensor);
     const prediction = await this.predict(recommendationTensor, userID);
 
+    if (prediction.length === 0) {
+      return {};
+    }
     const originalPredictions = this.inverseTransformPredictions([prediction]);
     const sortedIndices = this.getSortedIndices(originalPredictions);
     // const result = this.processPredictions([prediction], df_item);
@@ -311,6 +320,13 @@ export class RecommendationService implements OnModuleInit {
     const topFoods = [];
     const maxFoods = 10;
 
+    // Ambil daftar food group untuk mapping ID ke nama
+    const foodGroups = await this.foodGroupRepository.find();
+    const foodGroupMap = foodGroups.reduce((map, group) => {
+      map[group.id] = group.name;
+      return map;
+    }, {});
+
     for (const index of sortedIndices) {
       const productId = this.product[index] as unknown as number;
 
@@ -318,13 +334,27 @@ export class RecommendationService implements OnModuleInit {
         continue; // Jika tidak ada ID produk, lewati
       }
 
-      // Cek keberadaan produk di database
+      // Cek keberadaan produk di database dan hanya ambil kolom tertentu
       const food = await this.foodRepository.findOne({
         where: { id: productId },
+        select: ['id', 'name', 'grade', 'tags', 'image_url', 'type'], // Kolom yang akan diambil
       });
 
       if (food) {
-        topFoods.push(food); // Tambahkan ke daftar hasil jika ditemukan
+        // Ganti ID tags dengan nama menggunakan foodGroupMap
+        const tagNames = food.tags
+          .map((tagId) => foodGroupMap[tagId] || null)
+          .filter(Boolean);
+
+        // Tambahkan food dengan tags yang telah diganti ke hasil
+        topFoods.push({
+          id: food.id,
+          name: food.name,
+          grade: food.grade,
+          tags: tagNames,
+          image_url: food.image_url,
+          type: food.type,
+        });
       }
 
       // Jika sudah mendapatkan 10 data, hentikan loop
@@ -340,13 +370,29 @@ export class RecommendationService implements OnModuleInit {
         where: {
           id: In(
             this.product
-              .map((p) => p)
+              .map((p) => p as unknown as number)
               .filter((id) => !excludedIds.includes(id)),
           ),
         },
+        select: ['id', 'name', 'grade', 'tags', 'image_url', 'type'], // Kolom yang akan diambil
         take: maxFoods - topFoods.length,
       });
-      topFoods.push(...additionalFoods);
+
+      // Proses tambahan foods untuk mengganti ID tags dengan nama
+      additionalFoods.forEach((food) => {
+        const tagNames = food.tags
+          .map((tagId) => foodGroupMap[tagId] || null)
+          .filter(Boolean);
+
+        topFoods.push({
+          id: food.id,
+          name: food.name,
+          grade: food.grade,
+          tags: tagNames,
+          image_url: food.image_url,
+          type: food.type,
+        });
+      });
     }
 
     return topFoods;
