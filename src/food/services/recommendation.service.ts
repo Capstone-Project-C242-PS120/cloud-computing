@@ -77,9 +77,9 @@ export class RecommendationService implements OnModuleInit {
         'food.tags',
       ])
       .getRawMany();
-
+    // console.log(history);
     if (!history || history.length === 0) {
-      return {};
+      return null;
     }
     const foodGroups = await this.foodGroupRepository.find();
     const foodGroupMap = foodGroups.reduce((map, group) => {
@@ -243,8 +243,8 @@ export class RecommendationService implements OnModuleInit {
     userID: string,
   ): Promise<any> {
     const userData = await this.getUserFoodHistory(userID);
-    if (!userData.length) {
-      return [];
+    if (!userData) {
+      return null;
     }
     // console.log('User Data:', userData);
 
@@ -306,7 +306,7 @@ export class RecommendationService implements OnModuleInit {
     // console.log('Recommendation Tensor:', recommendationTensor);
     const prediction = await this.predict(recommendationTensor, userID);
 
-    if (prediction.length === 0) {
+    if (!prediction) {
       return {};
     }
     const originalPredictions = this.inverseTransformPredictions([prediction]);
