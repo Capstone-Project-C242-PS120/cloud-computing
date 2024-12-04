@@ -283,10 +283,26 @@ export class FoodService {
   }
 
   async saveFood(saveFoodDto: AnalyzeFoodSaveDto): Promise<Food> {
+    // Ambil semua food groups dari database
+    const foodGroups = await this.foodGroupRepository.find();
+
+    // Buat mapping nama ke ID
+    const foodGroupMap = foodGroups.reduce((map, group) => {
+      map[group.name.toLowerCase()] = group.id; // Mapping nama ke ID, nama dijadikan lowercase untuk pencocokan
+      return map;
+    }, {});
+
+    // Konversi nama tags menjadi ID
+    const tagIds = saveFoodDto.tags
+      .split(',')
+      .map((tagName) => foodGroupMap[tagName.trim().toLowerCase()])
+      .filter((id) => id); // Filter untuk memastikan hanya ID valid yang disertakan
+
+    // Buat objek food untuk disimpan
     const food = this.foodRepository.create({
       name: saveFoodDto.name,
       nutriscore: saveFoodDto.nutriscore,
-      tags: saveFoodDto.tags.split(',').map(String),
+      tags: tagIds, // Simpan ID tags
       grade: saveFoodDto.grade.charAt(0),
       type: 'Kemasan',
       calories: saveFoodDto.calories,
@@ -300,6 +316,7 @@ export class FoodService {
       image_nutrition_url: '',
     });
 
+    // Simpan food ke database
     const savedFood = await this.foodRepository.save(food);
 
     return savedFood;

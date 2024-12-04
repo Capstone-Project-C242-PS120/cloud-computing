@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FoodHistory } from '../entity/food-history.entity';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { FoodService } from './food.service';
 import { FoodGroup } from '../entity/food-group.entity';
 import { Food } from '../entity/food.entity';
