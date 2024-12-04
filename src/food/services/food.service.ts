@@ -282,7 +282,7 @@ export class FoodService {
     return updatedFood;
   }
 
-  async saveFood(saveFoodDto: AnalyzeFoodSaveDto): Promise<Food> {
+  async saveFood(saveFoodDto: AnalyzeFoodSaveDto, userId:string): Promise<Food> {
     // Ambil semua food groups dari database
     const foodGroups = await this.foodGroupRepository.find();
 
@@ -318,6 +318,7 @@ export class FoodService {
 
     // Simpan food ke database
     const savedFood = await this.foodRepository.save(food);
+    await this.addFoodHistory(userId, savedFood.id);
 
     return savedFood;
   }

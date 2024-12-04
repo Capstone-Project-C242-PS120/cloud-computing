@@ -147,7 +147,7 @@ export class FoodController {
       return Promise.reject(new ResponseWrapper(400, 'No file uploaded'));
     }
     try {
-      const savedFood = await this.foodService.saveFood(analyzeFoodSaveDto);
+      const savedFood = await this.foodService.saveFood(analyzeFoodSaveDto, req.user.id);
 
       // console.log(savedFood.id);
       if (!savedFood.id) {
