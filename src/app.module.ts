@@ -16,9 +16,7 @@ import { FoodGroup } from './food/entity/food-group.entity';
 import { FoodRate } from './food/entity/food-rate.entity';
 import { ScanHistory } from './food/entity/scan-history.entity';
 import { PointModule } from './point/point.module';
-import { SubscriptionController } from './subscription/subscription.controller';
-import { SubscriptionService } from './subscription/subscription.service';
-import { SubscriptionModule } from './subscription/subscription.module';
+
 import { PointHistory } from './point/entity/point-history.entity';
 import { Gift } from './point/entity/gift.entity';
 @Module({
@@ -80,10 +78,8 @@ import { Gift } from './point/entity/gift.entity';
     }),
     FoodModule,
     PointModule,
-    SubscriptionModule,
   ],
-  controllers: [SubscriptionController],
-  providers: [SubscriptionService],
+
   // controllers: [FoodController],
   // providers: [FoodService],
 })

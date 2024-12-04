@@ -259,23 +259,28 @@ export class FoodController {
   @Get('recommendation')
   @UseGuards(JwtLoginAuthGuard)
   async getRecommendation(@Req() req: any): Promise<ResponseWrapper<any>> {
-    const recommendation = await this.recommendationService.getUserFoodHistory(
-      req.user.id,
-    );
-    if (!recommendation) {
-      return Promise.reject(
-        new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          'Failed to retrieve recommendation',
-        ),
+    try {
+      const recommendation = await this.recommendationService.runRecommendation(
+        req.user.id,
       );
-    }
+      if (!recommendation) {
+        return Promise.reject(
+          new ResponseWrapper(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            'Failed to retrieve recommendation',
+          ),
+        );
+      }
 
-    return new ResponseWrapper(
-      HttpStatus.OK,
-      'Recommendation retrieved successfully',
-      recommendation,
-    );
+      return new ResponseWrapper(
+        HttpStatus.OK,
+        'Recommendation retrieved successfully',
+        recommendation,
+      );
+    } catch (error) {
+      console.log(error);
+      return Promise.reject(new ResponseWrapper(error));
+    }
   }
 
   // async parseImage(
