@@ -52,6 +52,27 @@ export class FoodController {
     );
   }
 
+  @Get('news')
+  @UseGuards(JwtLoginAuthGuard)
+  async getNews(): Promise<ResponseWrapper<any>> {
+    try {
+      const result = await this.foodService.fetchZetizenNews();
+      return new ResponseWrapper(
+        HttpStatus.OK,
+        'News data retrieved successfully',
+        result,
+      );
+    } catch (error) {
+      return Promise.reject(
+        new ResponseWrapper(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          'Failed to retrieve data',
+          error,
+        ),
+      );
+    }
+  }
+
   @Get('filter')
   @UseGuards(JwtLoginAuthGuard)
   async getPaginatedFoods(

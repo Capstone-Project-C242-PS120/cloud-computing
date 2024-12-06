@@ -13,6 +13,8 @@ import { PointHistory } from 'src/point/entity/point-history.entity';
 import { StorageService } from './cloud-storage.service';
 import axios from 'axios';
 import * as FormData from 'form-data';
+import { firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class FoodService {
@@ -31,6 +33,7 @@ export class FoodService {
     private pointHistoryRepository: Repository<PointHistory>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly storageService: StorageService,
+    private readonly httpService: HttpService,
   ) {}
 
   async addFoodHistory(userId: string, foodId: number): Promise<FoodHistory> {
@@ -64,23 +67,19 @@ export class FoodService {
       throw new Error('Food not found');
     }
 
-    // Ambil nama-nama FoodGroup berdasarkan tag ID yang ada di Food
     const tagsNames = await this.foodGroupRepository
       .createQueryBuilder('food_group')
       .where('food_group.id IN (:...ids)', { ids: food.tags })
       .getMany();
 
-    // Map tags IDs ke nama FoodGroup
     food.tags = tagsNames.map((tag) => tag.name); // Ganti tags dengan nama FoodGroup
 
     const foodRate = await this.getFoodRate(userId, foodId);
 
-    const result = {
+    return {
       ...food,
       food_rate: foodRate,
     };
-
-    return result;
   }
 
   async getFoods(
@@ -216,52 +215,27 @@ export class FoodService {
     // Kembalikan foodRate yang telah disimpan atau diperbarui
     return foodRate;
   }
-
-  // async uploadFile(
-  //   bucketName: string,
-  //   filePath: string,
-  //   file: Buffer,
-  //   mimeType: string,
-  // ): Promise<any> {
-  //   const supabase = this.supabaseService.getSupabaseClient();
-
-  //   await supabase.storage.from(bucketName).upload(filePath, file, {
-  //     contentType: mimeType,
-  //   });
-
-  //   const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
-
-  //   return data;
-  // }
-
-  async analyzeFoodNutrition2(userId: string): Promise<Food> {
-    // update user point
-
+  async fetchZetizenNews() {
+    const url =
+      'https://berita-indo-api-next.vercel.app/api/zetizen-jawapos-news/food-and-traveling';
     try {
-      const user = await this.userRepository.findOne({ where: { id: userId } });
-      user.point += 10;
-      await this.userRepository.save(user);
-      await this.createPointHistory(userId, 10);
+      const response = await firstValueFrom(this.httpService.get(url));
+      const data = response.data.data;
+
+      // Filter hanya properti title, content, link, dan image
+      const filteredData = data.map((item: any) => ({
+        title: item.title,
+        description: item.content,
+        url: item.link,
+        image_url: item.image,
+      }));
+
+      const randomIndex = Math.floor(Math.random() * filteredData.length);
+      return filteredData[randomIndex];
     } catch (error) {
-      throw new Error(error);
+      throw new Error(`Failed to fetch data: ${error.message}`);
     }
-
-    const FoodExample = {
-      nutriscore: -2.1,
-      grade: 'A',
-      type: 'Kemasan',
-      calories: 50.5,
-      fat: 0.5,
-      sugar: 0.5,
-      fiber: 0.5,
-      protein: 0.5,
-      natrium: 0.5,
-      vegetable: 0.5,
-    } as Food;
-
-    return FoodExample;
   }
-
   async analyzeFoodNutrition(
     userId: string,
     file: Express.Multer.File,
@@ -311,9 +285,7 @@ export class FoodService {
 
     food.image_url = imageUrl;
 
-    const updatedFood = await this.foodRepository.save(food);
-
-    return updatedFood;
+    return await this.foodRepository.save(food);
   }
 
   async saveFood(

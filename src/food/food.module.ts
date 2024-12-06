@@ -14,9 +14,11 @@ import { RecommendationService } from './services/recommendation.service';
 import { PointHistory } from 'src/point/entity/point-history.entity';
 import { SecretManagerService } from './services/secret-manager.service';
 import { StorageService } from './services/cloud-storage.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
+    HttpModule,
     JwtLoginModule,
     TypeOrmModule.forFeature([
       User,
