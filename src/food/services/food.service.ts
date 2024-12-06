@@ -282,7 +282,10 @@ export class FoodService {
     return updatedFood;
   }
 
-  async saveFood(saveFoodDto: AnalyzeFoodSaveDto, userId:string): Promise<Food> {
+  async saveFood(
+    saveFoodDto: AnalyzeFoodSaveDto,
+    userId: string,
+  ): Promise<Food> {
     // Ambil semua food groups dari database
     const foodGroups = await this.foodGroupRepository.find();
 
