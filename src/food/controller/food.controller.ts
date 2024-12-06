@@ -12,7 +12,6 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
-
 import { ResponseWrapper } from 'src/common/wrapper/response.wrapper';
 import { JwtLoginAuthGuard } from 'src/auth/jwt/guards/jwt.guard';
 import { FoodService } from '../services/food.service';
@@ -20,12 +19,14 @@ import { FoodResponseWrapper } from 'src/common/wrapper/food-response.wrapper';
 import { AnalyzeFoodSaveDto } from '../dto/analyze-food-save.dto';
 import { EatFoodDTO } from '../dto/eat-food-save.dto';
 import { RecommendationService } from '../services/recommendation.service';
+import { StorageService } from '../services/cloud-storage.service';
 
 @Controller('food')
 export class FoodController {
   constructor(
     private readonly foodService: FoodService,
     private readonly recommendationService: RecommendationService,
+    private readonly storageService: StorageService,
   ) {}
 
   @Get('detail')
@@ -147,7 +148,10 @@ export class FoodController {
       return Promise.reject(new ResponseWrapper(400, 'No file uploaded'));
     }
     try {
-      const savedFood = await this.foodService.saveFood(analyzeFoodSaveDto, req.user.id);
+      const savedFood = await this.foodService.saveFood(
+        analyzeFoodSaveDto,
+        req.user.id,
+      );
 
       // console.log(savedFood.id);
       if (!savedFood.id) {
@@ -159,14 +163,13 @@ export class FoodController {
         );
       }
 
-      const bucketName = process.env.SUPABASE_BUCKET_NAME;
-      const filePath = `${savedFood.id}`;
+      const bucketName = process.env.GCP_BUCKET_NAME;
+      const filePath = `food/${savedFood.id}`;
 
-      const { publicUrl } = await this.foodService.uploadFile(
+      const publicUrl = await this.storageService.uploadFile(
         bucketName,
         filePath,
         file.buffer,
-        file.mimetype,
       );
       // console.log(publicUrl);
       if (!publicUrl) {
@@ -207,7 +210,6 @@ export class FoodController {
       console.log(error);
     }
   }
-
   @Post('analyze')
   @UseInterceptors(
     FileInterceptor('image', {

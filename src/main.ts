@@ -7,7 +7,7 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.setGlobalPrefix('api');
   // console.log(process.env.PORT);
-  await app.listen(process.env.PORT, '0.0.0.0');
+  await app.listen(process.env.PORT);
 
   console.log(`Application is running on: ${await app.getUrl()}`);
 }

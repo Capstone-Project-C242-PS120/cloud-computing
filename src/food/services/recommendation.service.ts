@@ -10,6 +10,7 @@ import * as tf from '@tensorflow/tfjs-node';
 import * as fs from 'fs';
 import * as csv from 'csv-parser';
 import * as fsp from 'fs/promises';
+import axios from 'axios';
 
 @Injectable()
 export class RecommendationService implements OnModuleInit {
@@ -29,29 +30,60 @@ export class RecommendationService implements OnModuleInit {
   private dataset: any[][] = [];
   private features: string[] = [];
 
-  async loadModelAndDataset(modelPath: string): Promise<void> {
+  async downloadFile(url: string, destination: string): Promise<void> {
     try {
-      // Load TensorFlow model
+      const response = await axios.get(url, { responseType: 'stream' });
+      const writer = fs.createWriteStream(destination);
+
+      response.data.pipe(writer);
+
+      return new Promise((resolve, reject) => {
+        writer.on('finish', resolve);
+        writer.on('error', reject);
+      });
+    } catch (error) {
+      console.error(`Failed to download file from ${url}:`, error.message);
+      throw new Error(`Error downloading file: ${url}`);
+    }
+  }
+
+  async loadModelAndDataset(modelPath: string): Promise<void> {
+    const tempDir = './temp';
+    try {
+      // Validasi model path
       if (!modelPath) throw new Error('Model path is not defined');
+
       this.model = await tf.loadLayersModel(modelPath);
 
-      // Load product data from CSV
-      if (!process.env.ITEM_URL) throw new Error('Item URL is not defined');
-      this.product = await this.loadnormalcsvData(process.env.ITEM_URL);
-      // Load dataset from CSV
-      if (!process.env.DATASET_URL)
-        throw new Error('Dataset URL is not defined');
-      this.dataset = await this.loadCsvData(process.env.DATASET_URL);
-      // Load feature list from JSON file
-      if (!process.env.FEATURE_URL)
-        throw new Error('Feature URL is not defined');
-      const featureFileContent = await fsp.readFile(
-        process.env.FEATURE_URL,
-        'utf-8',
-      );
+      // Pastikan directory sementara tersedia
+      await fsp.mkdir(tempDir, { recursive: true });
+
+      // File paths
+      const itemFilePath = `${tempDir}/item.csv`;
+      const datasetFilePath = `${tempDir}/dataset.csv`;
+      const featureFilePath = `${tempDir}/feature.json`;
+
+      await this.downloadFile(process.env.ITEM_URL, itemFilePath);
+      await this.downloadFile(process.env.DATASET_URL, datasetFilePath);
+      await this.downloadFile(process.env.FEATURE_URL, featureFilePath);
+
+      this.product = await this.loadnormalcsvData(itemFilePath);
+      this.dataset = await this.loadCsvData(datasetFilePath);
+
+      const featureFileContent = await fsp.readFile(featureFilePath, 'utf-8');
       this.features = JSON.parse(featureFileContent);
     } catch (error) {
-      console.error('Error loading model:', error);
+      console.error('Error loading model or dataset:', error.message);
+    } finally {
+      // Hapus file sementara
+      try {
+        await fsp.rm(tempDir, { recursive: true, force: true });
+      } catch (cleanupError) {
+        console.error(
+          'Failed to clean up temporary files:',
+          cleanupError.message,
+        );
+      }
     }
   }
   async onModuleInit() {

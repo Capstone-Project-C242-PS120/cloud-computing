@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { SupabaseService } from './supabase.service';
 import { ILike, Repository } from 'typeorm';
 import { Food } from '../entity/food.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,6 +10,7 @@ import { FoodRate } from '../entity/food-rate.entity';
 import { FoodDetailResponseDto } from '../dto/food-detail.response.dto';
 import { User } from 'src/user/entity/user.entity';
 import { PointHistory } from 'src/point/entity/point-history.entity';
+import { StorageService } from './cloud-storage.service';
 
 @Injectable()
 export class FoodService {
@@ -28,7 +28,7 @@ export class FoodService {
     @InjectRepository(PointHistory)
     private pointHistoryRepository: Repository<PointHistory>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    private readonly supabaseService: SupabaseService,
+    private readonly storageService: StorageService,
   ) {}
 
   async addFoodHistory(userId: string, foodId: number): Promise<FoodHistory> {
@@ -215,22 +215,22 @@ export class FoodService {
     return foodRate;
   }
 
-  async uploadFile(
-    bucketName: string,
-    filePath: string,
-    file: Buffer,
-    mimeType: string,
-  ): Promise<any> {
-    const supabase = this.supabaseService.getSupabaseClient();
+  // async uploadFile(
+  //   bucketName: string,
+  //   filePath: string,
+  //   file: Buffer,
+  //   mimeType: string,
+  // ): Promise<any> {
+  //   const supabase = this.supabaseService.getSupabaseClient();
 
-    await supabase.storage.from(bucketName).upload(filePath, file, {
-      contentType: mimeType,
-    });
+  //   await supabase.storage.from(bucketName).upload(filePath, file, {
+  //     contentType: mimeType,
+  //   });
 
-    const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+  //   const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
 
-    return data;
-  }
+  //   return data;
+  // }
 
   async analyzeFoodNutrition(userId: string): Promise<Food> {
     // update user point
