@@ -62,7 +62,6 @@ export class FoodController {
   ): Promise<FoodResponseWrapper<any>> {
     const tagsArray = tags ? tags.split(',').map(Number) : [];
 
-    // Mengambil data makanan dengan pagination dan filter
     const result = await this.foodService.getFoods(
       page,
       limit,
