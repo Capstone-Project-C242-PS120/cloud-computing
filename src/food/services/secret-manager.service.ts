@@ -8,7 +8,7 @@ export class SecretManagerService {
   constructor() {
     const isLocal = process.env.NODE_ENV !== 'production';
 
-    // Inisialisasi Secret Manager dengan ADC atau file JSON untuk lokal
+
     this.client = isLocal
       ? new SecretManagerServiceClient({
           keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
