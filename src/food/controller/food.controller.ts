@@ -118,8 +118,6 @@ export class FoodController {
     @Body() eatFoodDto: EatFoodDTO,
   ): Promise<ResponseWrapper<any>> {
     try {
-      // const savedFood = await this.foodService.saveFood(analyzeFoodSaveDto);
-
       const foodHistory = await this.foodService.addFoodHistory(
         req.user.id,
         eatFoodDto.food_id,
