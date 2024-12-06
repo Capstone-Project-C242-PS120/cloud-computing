@@ -7,8 +7,6 @@ export class SecretManagerService {
 
   constructor() {
     const isLocal = process.env.NODE_ENV !== 'production';
-
-
     this.client = isLocal
       ? new SecretManagerServiceClient({
           keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
