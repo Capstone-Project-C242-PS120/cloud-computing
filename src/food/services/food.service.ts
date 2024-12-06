@@ -11,6 +11,8 @@ import { FoodDetailResponseDto } from '../dto/food-detail.response.dto';
 import { User } from 'src/user/entity/user.entity';
 import { PointHistory } from 'src/point/entity/point-history.entity';
 import { StorageService } from './cloud-storage.service';
+import axios from 'axios';
+import * as FormData from 'form-data';
 
 @Injectable()
 export class FoodService {
@@ -232,7 +234,7 @@ export class FoodService {
   //   return data;
   // }
 
-  async analyzeFoodNutrition(userId: string): Promise<Food> {
+  async analyzeFoodNutrition2(userId: string): Promise<Food> {
     // update user point
 
     try {
@@ -258,6 +260,38 @@ export class FoodService {
     } as Food;
 
     return FoodExample;
+  }
+
+  async analyzeFoodNutrition(
+    userId: string,
+    file: Express.Multer.File,
+  ): Promise<any> {
+    const formData = new FormData();
+    formData.append('file', file.buffer, file.originalname); // Kirim file dari memory storage
+
+    try {
+      const response = await axios.post(
+        `${process.env.OCR_SERVICE}/predict`, // URL FastAPI
+        formData,
+        {
+          headers: {
+            ...formData.getHeaders(),
+          },
+        },
+      );
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      user.point += 10;
+      await this.userRepository.save(user);
+      await this.createPointHistory(userId, 10);
+
+      return {
+        ...response.data,
+        type: 'kemasan',
+      }; // Hasil dari FastAPI
+    } catch (error) {
+      console.error('Error analyzing food nutrition:', error);
+      throw new Error('Failed to analyze food nutrition');
+    }
   }
 
   async createPointHistory(userId: string, point: number): Promise<void> {

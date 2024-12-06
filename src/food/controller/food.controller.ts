@@ -227,6 +227,7 @@ export class FoodController {
     try {
       const analyzeResult = await this.foodService.analyzeFoodNutrition(
         req.user.id,
+        file,
       );
       if (!analyzeResult) {
         return Promise.reject(
