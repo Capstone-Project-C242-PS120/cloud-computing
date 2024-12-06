@@ -55,12 +55,11 @@ export class FoodController {
   @Get('filter')
   @UseGuards(JwtLoginAuthGuard)
   async getPaginatedFoods(
-    @Query('page') page: number = 1, // Default halaman 1
-    @Query('limit') limit: number = 10, // Default limit 10
-    @Query('name') name: string = '', // Default filter name adalah string kosong
-    @Query('tags') tags: string = '', // Default filter tags adalah string kosong
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('name') name: string = '',
+    @Query('tags') tags: string = '',
   ): Promise<FoodResponseWrapper<any>> {
-    // Convert tags query parameter menjadi array of numbers (jika ada)
     const tagsArray = tags ? tags.split(',').map(Number) : [];
 
     // Mengambil data makanan dengan pagination dan filter
