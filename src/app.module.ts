@@ -16,7 +16,6 @@ import { PointModule } from './point/point.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 import * as path from 'path';
-// import { Connector, IpAddressTypes } from '@google-cloud/cloud-sql-connector';
 // import { Pool } from 'pg';
 
 @Module({
@@ -28,14 +27,12 @@ import * as path from 'path';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
-        const isCloudRrun = configService.get<string>('CLOUD_RUN'); // Flag untuk memilih Unix socket
-        const socketPath = `/cloudsql/${configService.get<string>('INSTANCE_CONNECTION_NAME')}`;
+        // const cloudSqlConnection = new ConnectionOptions();
+        // const connection = await cloudSqlConnection.connect();
+        // const socketPath = `/cloudsql/${configService.get<string>('INSTANCE_CONNECTION_NAME')}`;
         return {
           type: 'postgres',
-          host:
-            isCloudRrun === 'true'
-              ? socketPath
-              : configService.get<string>('DATABASE_HOST'),
+          host: configService.get<string>('DATABASE_HOST'),
           port: configService.get<number>('DATABASE_PORT'),
           username: configService.get<string>('DATABASE_USERNAME'),
           password: configService.get<string>('DATABASE_PASSWORD'),
