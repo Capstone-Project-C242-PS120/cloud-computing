@@ -16,6 +16,8 @@ import { PointModule } from './point/point.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 import * as path from 'path';
+import { Connector, IpAddressTypes } from '@google-cloud/cloud-sql-connector';
+import { Pool } from 'pg';
 
 @Module({
   imports: [
@@ -32,34 +34,41 @@ import * as path from 'path';
         console.log('isUsingUnixSocket:', isUsingUnixSocket);
         console.log('Socket Path:', socketPath);
 
-        // Pastikan semua variabel yang diperlukan ada
-        const databaseType = configService.get<'postgres'>('DATABASE_TYPE');
-        const host = configService.get<string>('DATABASE_HOST');
-        const port = configService.get<number>('DATABASE_PORT');
-        const username = configService.get<string>('DATABASE_USERNAME');
-        const password = configService.get<string>('DATABASE_PASSWORD');
-        const databaseName = configService.get<string>('DATABASE_NAME');
+        // Menggunakan cloud-sql-connector untuk menghubungkan ke PostgreSQL
 
-        console.log('Database Type:', databaseType);
-        console.log(
-          'Database Host:',
-          isUsingUnixSocket === 'true' ? undefined : host,
-        );
-        console.log(
-          'Database Port:',
-          isUsingUnixSocket === 'true' ? undefined : port,
-        );
-        console.log('Database Username:', username);
-        console.log('Database Name:', databaseName);
+        const connector = new Connector();
+        const clientOpts = await connector.getOptions({
+          instanceConnectionName: process.env.INSTANCE_CONNECTION_NAME,
+          ipType: IpAddressTypes.PSC,
+        });
+        const pool = new Pool({
+          ...clientOpts,
+          user: configService.get<string>('DATABASE_USERNAME'),
+          database: configService.get<string>('DATABASE_NAME'),
+        });
+
+        // Menguji koneksi pertama kali
+        await pool.connect().catch((err) => {
+          console.error('Database connection error:', err);
+          throw err;
+        });
+
+        console.log('Connected to the database successfully');
 
         return {
-          type: databaseType,
-          host: isUsingUnixSocket === 'true' ? undefined : host, // Gunakan `undefined` jika menggunakan Unix socket
-          port: isUsingUnixSocket === 'true' ? undefined : port, // Gunakan `undefined` jika menggunakan Unix socket
-          extra: isUsingUnixSocket === 'true' ? { socketPath } : undefined, // Gunakan socketPath jika menggunakan Unix socket
-          username: username,
-          password: password,
-          database: databaseName,
+          type: 'postgres',
+          host:
+            isUsingUnixSocket === 'true'
+              ? undefined
+              : configService.get<string>('DATABASE_HOST'),
+          port:
+            isUsingUnixSocket === 'true'
+              ? undefined
+              : configService.get<number>('DATABASE_PORT'),
+          extra: isUsingUnixSocket === 'true' ? { socketPath } : undefined,
+          username: configService.get<string>('DATABASE_USERNAME'),
+          password: configService.get<string>('DATABASE_PASSWORD'),
+          database: configService.get<string>('DATABASE_NAME'),
           entities: [
             User,
             Otp,
