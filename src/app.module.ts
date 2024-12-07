@@ -26,7 +26,7 @@ import * as path from 'path';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
-        const isUsingUnixSocket = configService.get<boolean>('USE_UNIX_SOCKET'); // Flag untuk memilih Unix socket
+        const isUsingUnixSocket = configService.get<string>('USE_UNIX_SOCKET'); // Flag untuk memilih Unix socket
         const socketPath = `/cloudsql/${configService.get<string>('INSTANCE_CONNECTION_NAME')}`;
 
         console.log('isUsingUnixSocket:', isUsingUnixSocket);
@@ -43,20 +43,20 @@ import * as path from 'path';
         console.log('Database Type:', databaseType);
         console.log(
           'Database Host:',
-          isUsingUnixSocket === true ? 'Unix Socket' : host,
+          isUsingUnixSocket === 'true' ? 'Unix Socket' : host,
         );
         console.log(
           'Database Port:',
-          isUsingUnixSocket === true ? 'Unix Socket' : port,
+          isUsingUnixSocket === 'true' ? 'Unix Socket' : port,
         );
         console.log('Database Username:', username);
         console.log('Database Name:', databaseName);
 
         return {
           type: databaseType,
-          host: isUsingUnixSocket === true ? undefined : host, // Gunakan `undefined` jika menggunakan Unix socket
-          port: isUsingUnixSocket === true ? undefined : port, // Gunakan `undefined` jika menggunakan Unix socket
-          extra: isUsingUnixSocket === true ? { socketPath } : undefined, // Gunakan socketPath jika menggunakan Unix socket
+          host: isUsingUnixSocket === 'true' ? undefined : host, // Gunakan `undefined` jika menggunakan Unix socket
+          port: isUsingUnixSocket === 'true' ? undefined : port, // Gunakan `undefined` jika menggunakan Unix socket
+          extra: isUsingUnixSocket === 'true' ? { socketPath } : undefined, // Gunakan socketPath jika menggunakan Unix socket
           username: username,
           password: password,
           database: databaseName,
