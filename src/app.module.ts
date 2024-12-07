@@ -89,8 +89,5 @@ import { Gift } from './point/entity/gift.entity';
     FoodModule,
     PointModule,
   ],
-
-  // controllers: [FoodController],
-  // providers: [FoodService],
 })
 export class AppModule {}
