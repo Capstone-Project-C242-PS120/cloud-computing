@@ -43,11 +43,11 @@ import * as path from 'path';
         console.log('Database Type:', databaseType);
         console.log(
           'Database Host:',
-          isUsingUnixSocket === 'true' ? 'Unix Socket' : host,
+          isUsingUnixSocket === 'true' ? undefined : host,
         );
         console.log(
           'Database Port:',
-          isUsingUnixSocket === 'true' ? 'Unix Socket' : port,
+          isUsingUnixSocket === 'true' ? undefined : port,
         );
         console.log('Database Username:', username);
         console.log('Database Name:', databaseName);
