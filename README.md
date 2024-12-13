@@ -27,7 +27,6 @@
 NestJS is particularly well-suited for creating enterprise-grade applications with maintainable code structures and consistent patterns.
 
 
-=======
 ## Application Architecture
 
 Below is the architecture diagram for the application (please replace `path/to/architecture-image.png` with the actual image path):
