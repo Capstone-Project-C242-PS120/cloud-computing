@@ -31,19 +31,6 @@ The following APIs have been implemented in this project:
 6. **food/recommendation** - Get food recommendations.
 7. **food/news** - Fetch the latest food-related news.
 
-### Point
-1. **point/gift-list** - Retrieve a list of available gifts.
-
-=======
-1. **GET /users** - Retrieve a list of users.
-2. **POST /users** - Add a new user.
-3. **PUT /users/:id** - Update user information by ID.
-4. **DELETE /users/:id** - Remove a user by ID.
-5. **GET /health** - Check the application's health status.
-
-(Expand the list as needed with additional endpoints.)
-
-
 ## Project setup
 
 ```bash
